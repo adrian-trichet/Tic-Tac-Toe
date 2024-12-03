@@ -19,10 +19,10 @@ def draw_grid():
     canvas.grid(row=0, column=0, columnspan=3, rowspan=3)
 
     # Dessiner les lignes de la grille (épaisseur des lignes = 5)
-    canvas.create_line(166, 0, 166, 500, width=5)  # Ligne verticale gauche
-    canvas.create_line(333, 0, 333, 500, width=5)  # Ligne verticale droite
-    canvas.create_line(0, 166, 500, 166, width=5)  # Ligne horizontale du haut
-    canvas.create_line(0, 333, 500, 333, width=5)  # Ligne horizontale du bas
+    canvas.create_line(166, 0, 166, 500, width=15)  # Ligne verticale gauche
+    canvas.create_line(333, 0, 333, 500, width=15)  # Ligne verticale droite
+    canvas.create_line(0, 166, 500, 166, width=15)  # Ligne horizontale du haut
+    canvas.create_line(0, 333, 500, 333, width=15)  # Ligne horizontale du bas
 
 # Fonction pour gérer les clics sur les boutons
 def button_click(row, col):

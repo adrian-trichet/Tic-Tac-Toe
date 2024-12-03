@@ -15,7 +15,26 @@ def display_grid(grid):
         # Cette ligne de séparation a une longueur de 5 (trois colonnes et deux séparateurs)
         print('-' * 5)
 
+def afficher_message( joueur,resultat):
+    if resultat == "victoire":
+        print(f"Le joueur {joueur} a gagné !")
+    elif resultat=="défaite":
+      print(f"lejoueur {joueur} a perdu")
+    elif resultat == "match_nul":
+        print("C'est un match nul !")
+    else:
+        print(f"un bug")
+
+
+
+ 
+
+
+    
+    
+    
 
 grid = init_grid()
 
 display_grid(grid)
+ 

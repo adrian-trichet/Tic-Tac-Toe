@@ -1,3 +1,7 @@
+import interface_graphique
+
+
+
 def init_grid():
     # Retourne une liste de 3 sous-listes, chacune contenant 3 espaces vides
     # Cela représente une grille 3x3 initialisée pour le jeu

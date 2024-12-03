@@ -94,7 +94,7 @@ class TicTacToe:
 
     def end_game(self, message):
         messagebox.showinfo("Fin de la partie", message)
-        self.create_start_screen()
+        self.root.quit()
 
     def clear_screen(self):
         for widget in self.root.winfo_children():

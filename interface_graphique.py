@@ -13,6 +13,10 @@ current_player = 'X'  # Le joueur commence avec 'X'
 buttons = []
 grid = [[' ' for _ in range(3)] for _ in range(3)]  # Matrice pour l'état du jeu
 
+# Ajouter un label pour afficher les messages de victoire ou égalité
+message_label = tk.Label(root, text="", font=("Arial", 20))
+message_label.grid(row=3, column=0, columnspan=3)
+
 # Fonction pour dessiner la grille
 def draw_grid():
     # Créer un Canvas pour dessiner les lignes
@@ -25,9 +29,16 @@ def draw_grid():
     canvas.create_line(0, 166, 500, 166, width=15)  # Ligne horizontale du haut
     canvas.create_line(0, 333, 500, 333, width=15)  # Ligne horizontale du bas
 
+def disable_buttons():
+    for row in buttons:
+        for button in row:
+            button.config(state="disabled")
+
 # Fonction pour gérer les clics sur les boutons
 def button_click(row, col):
     global current_player
+
+
 
     # Si la case est déjà remplie, ne rien faire
     if buttons[row][col]['text'] != " ":
@@ -40,8 +51,19 @@ def button_click(row, col):
     # Vérifier les conditions de victoire
     victory, message = check_victory(grid)
     if victory:
-        print(message)  # Afficher le message de victoire dans la console
-        return
+       message_label.config(text=message)  # Mettre à jour le label avec le message de victoire ou égalité
+       disable_buttons()
+       return
+    
+       
+
+    
+    if all(cell != ' ' for row in grid for cell in row):  # Vérifier si la grille est pleine
+       message_label.config(text="Égalité !")
+       disable_buttons()  # Désactiver les boutons en cas d'égalité
+       return
+
+
 
     # Changer de joueur
     current_player = 'O' if current_player == 'X' else 'X'

@@ -15,7 +15,6 @@ def display_grid(grid):
         # Cette ligne de séparation a une longueur de 5 (trois colonnes et deux séparateurs)
         print('-' * 5)
 
-<<<<<<< HEAD:main.py
 
 def check_victory(grid):
     # Vérifie les lignes
@@ -48,14 +47,3 @@ display_grid(grid)
 print(check_victory(grid))
 
 
-=======
-def afficher_message( joueur,resultat):
-    if resultat == "victoire":
-        print(f"Le joueur {joueur} a gagné !")
-    elif resultat=="défaite":
-      print(f"lejoueur {joueur} a perdu")
-    elif resultat == "match_nul":
-        print("C'est un match nul !")
-    else:
-        print(f"un bug")
->>>>>>> 8fafb10fb049d1ea19d80df44e6ebe8aadead804:mess_system.py

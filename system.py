@@ -25,6 +25,36 @@ def afficher_message( joueur,resultat):
     else:
         print(f"un bug")
 
+def check_victory(grid):
+    # Vérifie les lignes
+    for row in grid:
+        if row[0] == row[1] == row[2] and row[0] != ' ':
+            return True, f"Le joueur avec '{row[0]}' a gagné (ligne)."
+
+    # Vérifie les colonnes
+    for col in range(3):
+        if grid[0][col] == grid[1][col] == grid[2][col] and grid[0][col] != ' ':
+            return True, f"Le joueur avec '{grid[0][col]}' a gagné (colonne)."
+
+    # Vérifie la première diagonale
+    if grid[0][0] == grid[1][1] == grid[2][2] and grid[0][0] != ' ':
+        return True, f"Le joueur avec '{grid[0][0]}' a gagné (diagonale)."
+
+    # Vérifie la deuxième diagonale
+    if grid[0][2] == grid[1][1] == grid[2][0] and grid[0][2] != ' ':
+        return True, f"Le joueur avec '{grid[0][2]}' a gagné (diagonale)."
+
+    # Si aucune condition de victoire n'est remplie
+    return False, "Pas encore de victoire."
+
+grid = init_grid()
+grid[0][0] = "x"
+grid[0][1] = "x"
+grid[1][2] = "x"
+grid[2][1] = "x"
+display_grid(grid)
+print(check_victory(grid))
+
 
 
  

@@ -1,41 +1,9 @@
 import random  # Required import for random.choice()
 
-def ai_choose_random_cell(board):
-    empty_cells = []
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if board[i][j] == ' ':
-                empty_cells.append((i, j))
-    return random.choice(empty_cells)
-
-def ai_choose_improved_cell(grid, ai_symbol, player_symbol):
-    # Check if the AI can win
-    for i in range(3):
-        for j in range(3):
-            if grid[i][j] == ' ':
-                grid[i][j] = ai_symbol
-                if check_victory(grid)[0]:  # If the AI wins with this move
-                    return i, j
-                grid[i][j] = ' '  # Undo the test
-
-    # Block an imminent victory of the player
-    for i in range(3):
-        for j in range(3):
-            if grid[i][j] == ' ':
-                grid[i][j] = player_symbol
-                if check_victory(grid)[0]:  # If the player wins with this move
-                    grid[i][j] = ' '  # Undo the test
-                    return i, j
-                grid[i][j] = ' '  # Undo the test
-
-    # Otherwise, choose a random cell
-    return ai_choose_random_cell(grid)
-
-
 def player_move(grid, player):
     while True:
         try:
-            move = input(f"Player '{player}', enter your move (row,column, between 1 and 3): ")
+            move = input(f"Player with '{player}', enter your move (row,column, between 1 and 3): ")
             row, col = map(int, move.split(','))
             row -= 1
             col -= 1
@@ -67,16 +35,16 @@ def display_grid(grid):
 def check_victory(grid):
     for row in grid:
         if row[0] == row[1] == row[2] and row[0] != ' ':
-            return True, f"The player with '{row[0]}' won (row)."
+            return True, f"The player with '{row[0]}' won."
 
     for col in range(3):
         if grid[0][col] == grid[1][col] == grid[2][col] and grid[0][col] != ' ':
-            return True, f"The player with '{grid[0][col]}' won (column)."
+            return True, f"The player with '{grid[0][col]}' won."
 
     if grid[0][0] == grid[1][1] == grid[2][2] and grid[0][0] != ' ':
-        return True, f"The player with '{grid[0][0]}' won (diagonal)."
+        return True, f"The player with '{grid[0][0]}' won."
     if grid[0][2] == grid[1][1] == grid[2][0] and grid[0][2] != ' ':
-        return True, f"The player with '{grid[0][2]}' won (diagonal)."
+        return True, f"The player with '{grid[0][2]}' won."
 
     return False, "No victory yet."
 
@@ -99,7 +67,42 @@ def choose_difficulty():
         else:
             print("Invalid choice. Please enter 'easy' or 'hard'.")
 
-# Game initialization
+def ai_choose_random_cell(board):
+    empty_cells = []
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] == ' ':
+                empty_cells.append((i, j))
+    return random.choice(empty_cells)
+
+def ai_choose_improved_cell(grid, ai_symbol, player_symbol):
+    # Check if the AI can win
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == ' ':
+                grid[i][j] = ai_symbol
+                if check_victory(grid)[0]:  # If the AI wins with this move
+                    return i, j
+                grid[i][j] = ' '  # Undo the test
+
+    # Block an imminent victory of the player
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == ' ':
+                grid[i][j] = player_symbol
+                if check_victory(grid)[0]:  # If the player wins with this move
+                    grid[i][j] = ' '  # Undo the test
+                    return i, j
+                grid[i][j] = ' '  # Undo the test
+
+    # Otherwise, choose a random cell
+    return ai_choose_random_cell(grid)
+
+#################################################################
+##################### Game initialization #######################
+#################################################################
+
+
 grid = [[' ' for _ in range(3)] for _ in range(3)]
 
 player_symbol = 'X'
@@ -127,7 +130,7 @@ while True:
         break
     if check_draw(grid):
         display_grid(grid)
-        print("It's a draw! No available cells.")
+        print("It's a draw!")
         break
 
     if game_mode == 1:  # Player vs AI
@@ -135,6 +138,7 @@ while True:
         ai_move(grid, ai_symbol, player_symbol, difficulty)
     else:  # Two players mode
         # Player 2's turn
+        display_grid(grid)
         player_move(grid, ai_symbol)
 
     victory, message = check_victory(grid)
@@ -144,5 +148,5 @@ while True:
         break
     if check_draw(grid):
         display_grid(grid)
-        print("It's a draw! No available cells.")
+        print("It's a draw!")
         break

@@ -63,7 +63,7 @@ def button_click(row, col):
         message_label.config(text="Égalité !")
         disable_buttons()
         return
-
+ 
     # Tour de l'IA
     current_player = 'O'
     ai_row, ai_col = ai_move(grid)

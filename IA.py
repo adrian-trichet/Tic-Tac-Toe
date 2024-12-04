@@ -1,17 +1,32 @@
-import random
+import random  # Required import for random.choice()
 
-def ia_choisir_case_au_hasard(plateau):
-    # Créer une liste des indices des cases vides
-    cases_vides = []
-    
-    # Parcourir le plateau en 2D (par lignes et colonnes)
-    for i in range(len(plateau)):
-        for j in range(len(plateau[i])):
-            if plateau[i][j] == ' ':  # Si la case est vide
-                cases_vides.append((i, j))  # Ajouter l'indice (ligne, colonne) à la liste
-    
-    # Choisir un indice au hasard parmi les cases vides
-    case_choisie = random.choice(cases_vides)
-    
-    return case_choisie
+def ai_choose_random_cell(board):
+    empty_cells = []
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] == ' ':
+                empty_cells.append((i, j))
+    return random.choice(empty_cells)
 
+def ai_choose_improved_cell(grid, ai_symbol, player_symbol):
+    # Check if the AI can win
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == ' ':
+                grid[i][j] = ai_symbol
+                if check_victory(grid)[0]:  # If the AI wins with this move
+                    return i, j
+                grid[i][j] = ' '  # Undo the test
+
+    # Block an imminent victory of the player
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == ' ':
+                grid[i][j] = player_symbol
+                if check_victory(grid)[0]:  # If the player wins with this move
+                    grid[i][j] = ' '  # Undo the test
+                    return i, j
+                grid[i][j] = ' '  # Undo the test
+
+    # Otherwise, choose a random cell
+    return ai_choose_random_cell(grid)

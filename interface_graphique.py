@@ -1,6 +1,5 @@
 import tkinter as tk
 import random
-from tkinter import messagebox
 
 # Function to center the window on the screen
 def center_window(window, width, height):
@@ -20,16 +19,18 @@ def center_window(window, width, height):
 
 # Function to start the game based on the selected mode
 def start_game():
-    mode = mode_var.get()  # Récupérer le mode sélectionné (IA facile, IA difficile ou 2 joueurs)
-    root.destroy()  # Fermer la fenêtre de sélection
-    if mode == "IA Facile":
-        play_game(True, "facile")  # Mode IA facile
-    elif mode == "IA Difficile":
-        play_game(True, "difficile")  # Mode IA difficile
+    """
+    Retrieves the selected mode (easy AI or 2 players)
+    and launches the corresponding game function.
+    """
+    mode = mode_var.get()  # Get the selected mode
+    root.destroy()  # Close the mode selection window
+    if mode == "Easy AI":
+        play_game(True, "easy")  # Easy AI mode
     else:
-        play_game(False, "")  # Mode 2 joueurs
+        play_game(False, "")  # 2 players mode
 
-# Fonction qui gère la logique du jeu
+# Main function that handles the game logic
 def play_game(is_ai_mode, ai_level):
     """
     Initializes and starts the Tic Tac Toe game.
@@ -41,15 +42,16 @@ def play_game(is_ai_mode, ai_level):
     # Create the game window
     game_root = tk.Tk()
     game_root.title("Tic Tac Toe")
-    game_root.resizable(False, False)
+    game_root.resizable(False, False)  # Disable window resizing
     
-    # Centrer la fenêtre
+    # Center the window
     center_window(game_root, 500, 500)
 
-    current_player = 'X'  # Le joueur commence avec 'X'
-    buttons = []
-    grid = [[' ' for _ in range(3)] for _ in range(3)]  # Matrice pour l'état du jeu
+    current_player = 'X'  # The player starts with 'X'
+    buttons = []  # List to store the buttons of the grid
+    grid = [[' ' for _ in range(3)] for _ in range(3)]  # Matrix to represent the game state
 
+    # Label to display victory or draw messages
     message_label = tk.Label(game_root, text="", font=("Arial", 20))
     message_label.grid(row=3, column=0, columnspan=3)
 
@@ -75,11 +77,11 @@ def play_game(is_ai_mode, ai_level):
         grid[row][col] = current_player
         victory, message = check_victory(grid)
         if victory:
-            messagebox.showinfo("Game Over", message)
+            message_label.config(text=message)
             disable_buttons()
             return
-        if all(cell != ' ' for row in grid for cell in row):
-            message_label.config(text="Égalité !")
+        if all(cell != ' ' for row in grid for cell in row):  # Check if the grid is full
+            message_label.config(text="Draw!")
             disable_buttons()
             return
         current_player = 'O' if current_player == 'X' else 'X'  # Switch players
@@ -100,78 +102,49 @@ def play_game(is_ai_mode, ai_level):
         # Check rows
         for row in grid:
             if row[0] == row[1] == row[2] and row[0] != ' ':
-                return True, f"Le joueur avec '{row[0]}' a gagné (ligne)."
+                return True, f"Player '{row[0]}' wins (row)."
+        # Check columns
         for col in range(3):
             if grid[0][col] == grid[1][col] == grid[2][col] and grid[0][col] != ' ':
-                return True, f"Le joueur avec '{grid[0][col]}' a gagné (colonne)."
+                return True, f"Player '{grid[0][col]}' wins (column)."
+        # Check diagonals
         if grid[0][0] == grid[1][1] == grid[2][2] and grid[0][0] != ' ':
             return True, f"Player '{grid[0][0]}' wins (diagonal)."
         if grid[0][2] == grid[1][1] == grid[2][0] and grid[0][2] != ' ':
-            return True, f"Le joueur avec '{grid[0][2]}' a gagné (diagonale)."
-        return False, "Pas encore de victoire."
+            return True, f"Player '{grid[0][2]}' wins (diagonal)."
+        return False, ""  # No winner yet
 
     def ai_move(level):
-        # Ajouter un délai de 500ms avant que l'IA joue
-        game_root.after(500, make_ai_move, level)
+        """
+        Handles the AI's move with a delay.
+        
+        Parameters:
+            level (str): The difficulty level of the AI ("easy").
+        """
+        game_root.after(2000, make_ai_move, level)
 
     def make_ai_move(level):
-        if level == "facile":
-            easy_ai_move()
-        else:
-            hard_ai_move()  # Appelle la version améliorée de l'IA difficile
+        """Makes the AI move according to the selected difficulty level."""
+        if level == "easy":
+            easy_ai_move()  # Easy AI
 
     def easy_ai_move():
-        available_moves = [(r, c) for r in range(3) for c in range(3) if grid[r][c] == ' ']
-        if available_moves:
-            move = random.choice(available_moves)
+        """
+        The easy AI chooses a random move from available empty spaces.
+        """
+        available = available_moves()
+        if available:
+            move = random.choice(available)  # Choose a random move
             button_click(move[0], move[1])
 
-    def available_moves(board):
-        return [(r, c) for r in range(3) for c in range(3) if board[r][c] == ' ']
-
-    def minimax(board, depth, is_maximizing, alpha, beta):
-        winner, _ = check_victory(board)
-        if winner == 'X':  # 'X' perd
-            return -1
-        elif winner == 'O':  # 'O' gagne
-            return 1
-        if all(cell != ' ' for row in board for cell in row):  # égalité
-            return 0
+    def available_moves():
+        """
+        Returns a list of available moves (empty spaces).
         
-        if is_maximizing:
-            max_eval = -float('inf')
-            for move in available_moves(board):
-                board[move[0]][move[1]] = 'O'  # L'IA joue
-                eval = minimax(board, depth + 1, False, alpha, beta)
-                board[move[0]][move[1]] = ' '
-                max_eval = max(max_eval, eval)
-                alpha = max(alpha, eval)
-                if beta <= alpha:
-                    break
-            return max_eval
-        else:
-            min_eval = float('inf')
-            for move in available_moves(board):
-                board[move[0]][move[1]] = 'X'  # Le joueur humain joue
-                eval = minimax(board, depth + 1, True, alpha, beta)
-                board[move[0]][move[1]] = ' '
-                min_eval = min(min_eval, eval)
-                beta = min(beta, eval)
-                if beta <= alpha:
-                    break
-            return min_eval
-
-    def hard_ai_move():
-        best_move = None
-        best_value = -float('inf')
-        for move in available_moves(grid):
-            grid[move[0]][move[1]] = 'O'  # L'IA joue
-            move_value = minimax(grid, 0, False, -float('inf'), float('inf'))  # Recherche du meilleur coup
-            grid[move[0]][move[1]] = ' '
-            if move_value > best_value:
-                best_value = move_value
-                best_move = move
-        button_click(best_move[0], best_move[1])
+        Returns:
+            list: List of tuples (row, column) of empty spaces.
+        """
+        return [(r, c) for r in range(3) for c in range(3) if grid[r][c] == ' ']
 
     def create_buttons():
         """
@@ -182,40 +155,35 @@ def play_game(is_ai_mode, ai_level):
             for col in range(3):
                 button = tk.Button(game_root, text=" ", font=("Arial", 50), width=5, height=2,
                                    command=lambda r=row, c=col: button_click(r, c))
-                button.grid(row=row, column=col, sticky="nsew")  # Utilisation de grid pour une disposition flexible
+                button.grid(row=row, column=col, sticky="nsew")  # Use grid for flexible layout
                 button_row.append(button)
             buttons.append(button_row)
 
-        # Assurer que les cellules de la grille sont redimensionnables
+        # Ensure the grid cells are resizable
         for i in range(3):
             game_root.grid_columnconfigure(i, weight=1)
             game_root.grid_rowconfigure(i, weight=1)
 
-    create_buttons()
-    game_root.mainloop()
+    create_buttons()  # Create the game grid
+    game_root.mainloop()  # Start the main game loop
 
-# Interface de sélection de mode
+# Mode selection interface
 root = tk.Tk()
 root.title("Tic Tac Toe")
-root.resizable(False, False)
+root.resizable(False, False)  # Disable window resizing
 
-# Centrer la fenêtre
+# Center the mode selection window
 center_window(root, 500, 500)
 
 mode_var = tk.StringVar()
-mode_var.set("2 Joueurs")
+mode_var.set("2 Players")  # Default mode
 
-# Radiobutton pour 2 joueurs
-tk.Radiobutton(root, text="2 Joueurs", variable=mode_var, value="2 Joueurs", font=("Arial", 20)).pack()
+# Create the mode selection radio buttons
+tk.Radiobutton(root, text="2 Players", variable=mode_var, value="2 Players", font=("Arial", 20)).pack()
+tk.Radiobutton(root, text="Play Versus Easy AI", variable=mode_var, value="Easy AI", font=("Arial", 20)).pack()
 
-# Radiobutton pour IA facile
-tk.Radiobutton(root, text="Jouer contre l'IA facile", variable=mode_var, value="IA Facile", font=("Arial", 20)).pack()
-
-# Radiobutton pour IA difficile
-tk.Radiobutton(root, text="Jouer contre l'IA difficile", variable=mode_var, value="IA Difficile", font=("Arial", 20)).pack()
-
-# Bouton de démarrage
-start_button = tk.Button(root, text="Commencer le jeu", font=("Arial", 20), command=start_game)
-start_button.pack(pady=150)
+# Button to start the game
+start_button = tk.Button(root, text="Start Game", font=("Arial", 20), command=start_game)
+start_button.pack()
 
 root.mainloop()  # Start the mode selection window

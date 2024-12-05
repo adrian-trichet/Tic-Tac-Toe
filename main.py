@@ -1,152 +1,140 @@
-import random  # Required import for random.choice()
+import tkinter as tk
+from tkinter import messagebox
 
-def player_move(grid, player):
-    while True:
-        try:
-            move = input(f"Player with '{player}', enter your move (row,column, between 1 and 3): ")
-            row, col = map(int, move.split(','))
-            row -= 1
-            col -= 1
-            
-            if 0 <= row < 3 and 0 <= col < 3:
-                if grid[row][col] == ' ':
-                    grid[row][col] = player
-                    break
-                else:
-                    print("This cell is already occupied. Try another one.")
-            else:
-                print("Coordinates must be between 1 and 3. Try again.")
-        except (ValueError, IndexError):
-            print("Invalid input. Make sure to enter valid coordinates (e.g.: 1,2).")
-
-def ai_move(grid, ai_symbol, player_symbol, difficulty):
-    if difficulty == 'easy':
-        row, col = ai_choose_random_cell(grid)
-    else:  # Difficulty 'hard'
-        row, col = ai_choose_improved_cell(grid, ai_symbol, player_symbol)
-    grid[row][col] = ai_symbol
-    print(f"AI plays at ({row + 1}, {col + 1})")
-
-def display_grid(grid):
-    for row in grid:
-        print(' | '.join(row))
-        print('-' * 9)
-
-def check_victory(grid):
-    for row in grid:
+# Fonction pour vérifier s'il y a un gagnant
+def check_victory(board):
+    # Vérification des lignes
+    for row in board:
         if row[0] == row[1] == row[2] and row[0] != ' ':
-            return True, f"The player with '{row[0]}' won."
-
+            return True
+    # Vérification des colonnes
     for col in range(3):
-        if grid[0][col] == grid[1][col] == grid[2][col] and grid[0][col] != ' ':
-            return True, f"The player with '{grid[0][col]}' won."
+        if board[0][col] == board[1][col] == board[2][col] and board[0][col] != ' ':
+            return True
+    # Vérification des diagonales
+    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != ' ':
+        return True
+    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != ' ':
+        return True
+    return False
 
-    if grid[0][0] == grid[1][1] == grid[2][2] and grid[0][0] != ' ':
-        return True, f"The player with '{grid[0][0]}' won."
-    if grid[0][2] == grid[1][1] == grid[2][0] and grid[0][2] != ' ':
-        return True, f"The player with '{grid[0][2]}' won."
+# Fonction pour vérifier si la grille est pleine (égalité)
+def is_board_full(board):
+    for row in board:
+        for cell in row:
+            if cell == ' ':
+                return False
+    return True
 
-    return False, "No victory yet."
+# Fonction Minimax avec profondeur limitée
+def minimax(board, depth, is_maximizing, max_depth):
+    if check_victory(board):
+        return 1 if not is_maximizing else -1
+    if is_board_full(board) or depth >= max_depth:
+        return 0
 
-def check_draw(grid):
-    return all(cell != ' ' for row in grid for cell in row)
+    if is_maximizing:
+        best_score = -float('inf')
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == ' ':
+                    board[row][col] = 'O'
+                    score = minimax(board, depth + 1, False, max_depth)
+                    board[row][col] = ' '
+                    best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == ' ':
+                    board[row][col] = 'X'
+                    score = minimax(board, depth + 1, True, max_depth)
+                    board[row][col] = ' '
+                    best_score = min(score, best_score)
+        return best_score
 
-def choose_game_mode():
-    while True:
-        mode = input("Choose the game mode:\n1 - Play against AI\n2 - Play with two players\nYour choice (1 or 2): ")
-        if mode in ['1', '2']:
-            return int(mode)
+# Fonction pour le meilleur coup de l'IA avec une profondeur limitée
+def best_move(board, max_depth):
+    best_score = -float('inf')
+    move = None
+    for row in range(3):
+        for col in range(3):
+            if board[row][col] == ' ':
+                board[row][col] = 'O'
+                score = minimax(board, 0, False, max_depth)
+                board[row][col] = ' '
+                if score > best_score:
+                    best_score = score
+                    move = (row, col)
+    return move
+
+# Fonction pour gérer le délai avant de jouer le coup de l'IA
+def delayed_ai_move(board, buttons, max_depth):
+    root.after(2000, ai_move, board, buttons, max_depth)  # 2000 ms = 2 secondes
+
+# Fonction pour gérer le clic sur la grille
+def player_move(row, col, board, buttons, max_depth):
+    if board[row][col] == ' ':
+        board[row][col] = 'X'
+        buttons[row][col].config(text='X')  # Le bouton affiche 'X'
+        if check_victory(board):
+            messagebox.showinfo("Victoire", "Le joueur X a gagné!")
+            disable_buttons(buttons)
+        elif is_board_full(board):
+            messagebox.showinfo("Égalité", "Match nul!")
+            disable_buttons(buttons)
         else:
-            print("Invalid choice. Please enter 1 or 2.")
+            delayed_ai_move(board, buttons, max_depth)  # Délai avant que l'IA joue
 
-def choose_difficulty():
-    while True:
-        difficulty = input("Choose AI difficulty level:\neasy - Random AI\nhard - Smart AI\nYour choice: ").lower()
-        if difficulty in ['easy', 'hard']:
-            return difficulty
-        else:
-            print("Invalid choice. Please enter 'easy' or 'hard'.")
+# Fonction pour l'IA
+def ai_move(board, buttons, max_depth):
+    move = best_move(board, max_depth)
+    if move:
+        row, col = move
+        board[row][col] = 'O'
+        buttons[row][col].config(text='O')  # L'IA affiche 'O'
+        if check_victory(board):
+            messagebox.showinfo("Victoire", "L'IA (O) a gagné!")
+            disable_buttons(buttons)
+        elif is_board_full(board):
+            messagebox.showinfo("Égalité", "Match nul!")
+            disable_buttons(buttons)
 
-def ai_choose_random_cell(board):
-    empty_cells = []
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if board[i][j] == ' ':
-                empty_cells.append((i, j))
-    return random.choice(empty_cells)
+# Fonction pour désactiver tous les boutons après la fin du jeu
+def disable_buttons(buttons):
+    for row in buttons:
+        for button in row:
+            button.config(state='disabled')
 
-def ai_choose_improved_cell(grid, ai_symbol, player_symbol):
-    # Check if the AI can win
-    for i in range(3):
-        for j in range(3):
-            if grid[i][j] == ' ':
-                grid[i][j] = ai_symbol
-                if check_victory(grid)[0]:  # If the AI wins with this move
-                    return i, j
-                grid[i][j] = ' '  # Undo the test
+# Fonction pour réinitialiser la grille
+def reset_game(board, buttons, max_depth):
+    for row in range(3):
+        for col in range(3):
+            board[row][col] = ' '
+            buttons[row][col].config(text=' ')  # Réinitialise le texte des boutons
+            buttons[row][col].config(state='normal')  # Réactive les boutons
 
-    # Block an imminent victory of the player
-    for i in range(3):
-        for j in range(3):
-            if grid[i][j] == ' ':
-                grid[i][j] = player_symbol
-                if check_victory(grid)[0]:  # If the player wins with this move
-                    grid[i][j] = ' '  # Undo the test
-                    return i, j
-                grid[i][j] = ' '  # Undo the test
+# Fonction pour créer la fenêtre de jeu
+def create_game_window():
+    global root  # Déclare 'root' comme global pour l'utiliser dans d'autres fonctions
+    root = tk.Tk()
+    root.title("Tic Tac Toe - IA (Minimax)")
 
-    # Otherwise, choose a random cell
-    return ai_choose_random_cell(grid)
+    board = [[' ' for _ in range(3)] for _ in range(3)]
+    buttons = [[None for _ in range(3)] for _ in range(3)]
+    max_depth = 3  # Profondeur maximale de l'IA (plus faible = IA moins forte)
 
-#################################################################
-##################### Game initialization #######################
-#################################################################
+    for row in range(3):
+        for col in range(3):
+            buttons[row][col] = tk.Button(root, text=' ', font=('normal', 40), width=5, height=2,
+                                          command=lambda r=row, c=col: player_move(r, c, board, buttons, max_depth))
+            buttons[row][col].grid(row=row, column=col)
 
+    reset_button = tk.Button(root, text="Réinitialiser", font=('normal', 20), command=lambda: reset_game(board, buttons, max_depth))
+    reset_button.grid(row=3, column=0, columnspan=3)
 
-grid = [[' ' for _ in range(3)] for _ in range(3)]
+    root.mainloop()
 
-player_symbol = 'X'
-ai_symbol = 'O'
-
-# Choose game mode
-game_mode = choose_game_mode()
-
-if game_mode == 1:
-    print("Game mode: Player vs AI.")
-    difficulty = choose_difficulty()
-else:
-    print("Game mode: Two players.")
-
-# Main loop
-while True:
-    display_grid(grid)
-    
-    # Player 1's turn
-    player_move(grid, player_symbol)
-    victory, message = check_victory(grid)
-    if victory:
-        display_grid(grid)
-        print(message)
-        break
-    if check_draw(grid):
-        display_grid(grid)
-        print("It's a draw!")
-        break
-
-    if game_mode == 1:  # Player vs AI
-        # AI's turn
-        ai_move(grid, ai_symbol, player_symbol, difficulty)
-    else:  # Two players mode
-        # Player 2's turn
-        display_grid(grid)
-        player_move(grid, ai_symbol)
-
-    victory, message = check_victory(grid)
-    if victory:
-        display_grid(grid)
-        print(message)
-        break
-    if check_draw(grid):
-        display_grid(grid)
-        print("It's a draw!")
-        break
+# Démarrer le jeu
+create_game_window()

@@ -1,5 +1,6 @@
 import random  # Required import for random.choice()
 
+# Let the player chose a cell with a input string (ex:"1,2")
 def player_move(grid, player):
     while True:
         try:
@@ -19,6 +20,7 @@ def player_move(grid, player):
         except (ValueError, IndexError):
             print("Invalid input. Make sure to enter valid coordinates (e.g.: 1,2).")
 
+# Chose between 2 AI difficult and play his move
 def ai_move(grid, ai_symbol, player_symbol, difficulty):
     if difficulty == 'easy':
         row, col = ai_choose_random_cell(grid)
@@ -27,11 +29,13 @@ def ai_move(grid, ai_symbol, player_symbol, difficulty):
     grid[row][col] = ai_symbol
     print(f"AI plays at ({row + 1}, {col + 1})")
 
+# Display the grid in the terminal
 def display_grid(grid):
     for row in grid:
         print(' | '.join(row))
         print('-' * 9)
 
+# Check win condition and display the winner symbol
 def check_victory(grid):
     for row in grid:
         if row[0] == row[1] == row[2] and row[0] != ' ':
@@ -48,9 +52,11 @@ def check_victory(grid):
 
     return False, "No victory yet."
 
+# Check for a draw scenario
 def check_draw(grid):
     return all(cell != ' ' for row in grid for cell in row)
 
+# Let the user input a game mode IA vs player or player vs player
 def choose_game_mode():
     while True:
         mode = input("Choose the game mode:\n1 - Play against AI\n2 - Play with two players\nYour choice (1 or 2): ")
@@ -59,6 +65,7 @@ def choose_game_mode():
         else:
             print("Invalid choice. Please enter 1 or 2.")
 
+# User choose between easy (random) and hard (smart) difficulty
 def choose_difficulty():
     while True:
         difficulty = input("Choose AI difficulty level:\neasy - Random AI\nhard - Smart AI\nYour choice: ").lower()
@@ -67,33 +74,35 @@ def choose_difficulty():
         else:
             print("Invalid choice. Please enter 'easy' or 'hard'.")
 
+# Choose a random cell that is not already occupied
 def ai_choose_random_cell(board):
     empty_cells = []
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if board[i][j] == ' ':
-                empty_cells.append((i, j))
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] == ' ':
+                empty_cells.append((row, col))
     return random.choice(empty_cells)
 
+# Smart IA, try to win at every move, if not block the player and else play randomly
 def ai_choose_improved_cell(grid, ai_symbol, player_symbol):
     # Check if the AI can win
-    for i in range(3):
-        for j in range(3):
-            if grid[i][j] == ' ':
-                grid[i][j] = ai_symbol
+    for row in range(3):
+        for col in range(3):
+            if grid[row][col] == ' ':
+                grid[row][col] = ai_symbol
                 if check_victory(grid)[0]:  # If the AI wins with this move
-                    return i, j
-                grid[i][j] = ' '  # Undo the test
+                    return row, col
+                grid[row][col] = ' '  # Undo the test
 
     # Block an imminent victory of the player
-    for i in range(3):
-        for j in range(3):
-            if grid[i][j] == ' ':
-                grid[i][j] = player_symbol
+    for row in range(3):
+        for col in range(3):
+            if grid[row][col] == ' ':
+                grid[row][col] = player_symbol
                 if check_victory(grid)[0]:  # If the player wins with this move
-                    grid[i][j] = ' '  # Undo the test
-                    return i, j
-                grid[i][j] = ' '  # Undo the test
+                    grid[row][col] = ' '  # Undo the test
+                    return row, col
+                grid[row][col] = ' '  # Undo the test
 
     # Otherwise, choose a random cell
     return ai_choose_random_cell(grid)
